@@ -2,10 +2,10 @@
 This is a database that any store can use where it allows to track their customer, product and all items sold to a customer and generate an invoice (bill). 
 
 1. Create at least following tables: 
-Product	 
-Customer  
-Sales Transaction 
-Invoice 
+a.Product	 
+b.Customer  
+c.Sales Transaction 
+d.Invoice 
 Note: Each table must have primary key, Unique key and should have foreign key constraints (can have check constraints) 
 
 2.Based on created tables, create the following using TSQL 
