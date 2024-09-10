@@ -1,0 +1,35 @@
+CREATE PROCEDURE CreateInvoice(@InvoiceJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @CustomerID INT;
+    DECLARE @TotalAmount DECIMAL(10,2), @Discount DECIMAL(5,2), @FinalAmount DECIMAL(10,2);
+
+    -- Parse the JSON to extract CustomerID
+    SELECT @CustomerID = JSON_VALUE(@InvoiceJson, '$.CustomerID');
+
+    -- Calculate total amount for the customer
+    SELECT @TotalAmount = SUM(st.QuantityBought * p.Price)
+    FROM SalesTransaction st
+    JOIN Product p ON st.ProductID = p.ProductID
+    WHERE st.CustomerID = @CustomerID;
+
+    -- Apply discount
+    IF @TotalAmount <= 500
+        SET @Discount = 0.05 * @TotalAmount;
+    ELSE
+        SET @Discount = 0.10 * @TotalAmount;
+
+    SET @FinalAmount = @TotalAmount - @Discount;
+
+    -- Insert Invoice
+    INSERT INTO Invoice (TransactionID, CustomerID, TotalAmount, Discount, FinalAmount)
+    SELECT TOP 1 TransactionID, CustomerID, @TotalAmount, @Discount, @FinalAmount
+    FROM SalesTransaction
+    WHERE CustomerID = @CustomerID;
+
+    -- Return the created invoice in JSON format
+    SELECT InvoiceID, TransactionID, CustomerID, TotalAmount, Discount, FinalAmount
+    FROM Invoice
+    WHERE CustomerID = @CustomerID
+    FOR JSON AUTO;
+END;
