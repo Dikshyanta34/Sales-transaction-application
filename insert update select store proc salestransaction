@@ -1,0 +1,59 @@
+-- Insert Sales Transaction
+CREATE PROCEDURE InsertSalesTransaction(@SalesJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @Sales TABLE (
+        CustomerID INT,
+        ProductID INT,
+        QuantityBought INT
+    );
+    INSERT INTO @Sales
+    SELECT * FROM OPENJSON(@SalesJson)
+    WITH (CustomerID INT, ProductID INT, QuantityBought INT);
+
+    INSERT INTO SalesTransaction (CustomerID, ProductID, QuantityBought)
+    SELECT CustomerID, ProductID, QuantityBought FROM @Sales;
+
+    -- Update Remaining Quantity
+    UPDATE Product
+    SET RemainingQuantity = RemainingQuantity - s.QuantityBought
+    FROM Product p
+    JOIN @Sales s ON p.ProductID = s.ProductID;
+END;
+
+-- Update Sales Transaction
+CREATE PROCEDURE UpdateSalesTransaction(@SalesJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @Sales TABLE (
+        TransactionID INT,
+        CustomerID INT,
+        ProductID INT,
+        QuantityBought INT
+    );
+    INSERT INTO @Sales
+    SELECT * FROM OPENJSON(@SalesJson)
+    WITH (TransactionID INT, CustomerID INT, ProductID INT, QuantityBought INT);
+
+    UPDATE SalesTransaction
+    SET CustomerID = s.CustomerID, ProductID = s.ProductID, QuantityBought = s.QuantityBought
+    FROM SalesTransaction st
+    JOIN @Sales s ON st.TransactionID = s.TransactionID;
+
+    -- Update Remaining Quantity based on new values
+    UPDATE Product
+    SET RemainingQuantity = RemainingQuantity - s.QuantityBought
+    FROM Product p
+    JOIN @Sales s ON p.ProductID = s.ProductID;
+END;
+
+-- Select Sales Transaction
+CREATE PROCEDURE SelectSalesTransaction(@SalesJson NVARCHAR(MAX))
+AS
+BEGIN
+    SELECT TransactionID, CustomerID, ProductID, QuantityBought, TransactionDate
+    FROM SalesTransaction
+    WHERE CustomerID IN (SELECT value FROM OPENJSON(@SalesJson));
+END;
+
+
