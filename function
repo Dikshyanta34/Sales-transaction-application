@@ -1,0 +1,47 @@
+CREATE FUNCTION GetTotalAmountByCustomer( 
+
+    @CustomerIDs NVARCHAR(MAX), 
+
+     
+
+    @Entity NVARCHAR(50) -- 'transaction' or 'invoice' 
+
+) 
+
+RETURNS TABLE 
+
+AS 
+
+RETURN 
+
+( 
+
+    SELECT C.CustomerID, C.FirstName, C.LastName, 
+
+           SUM(CASE WHEN @Entity = 'invoice' THEN I.FinalAmount ELSE ST.QuantityBought * P.Price END) AS TotalAmount 
+
+    FROM Customer C 
+
+    LEFT JOIN Invoice I ON C.CustomerID = I.CustomerID 
+
+    LEFT JOIN SalesTransaction ST ON C.CustomerID = ST.CustomerID 
+
+    LEFT JOIN Product P ON ST.ProductID = P.ProductID 
+
+    WHERE C.CustomerID IN (SELECT value FROM STRING_SPLIT(@CustomerIDs, ',')) 
+
+      AND (I.InvoiceDate BETWEEN '2024-09-08 21:52:30.623' AND '2024-09-08 21:52:30.633' OR ST.TransactionDate BETWEEN '2024-09-08 21:52:30.610' AND '2024-09-08 21:52:30.630') 
+
+    GROUP BY C.CustomerID, C.FirstName, C.LastName 
+
+); 
+
+for execution :
+SELECT * 
+FROM dbo.GetTotalAmountByCustomer(
+    '151,160',  -- Customer IDs as a comma-separated string
+    
+    'invoice'       -- 'transaction
+	);
+
+ 
