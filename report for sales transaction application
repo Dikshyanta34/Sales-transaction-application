@@ -1,0 +1,44 @@
+-- Product Table
+CREATE TABLE Product (
+    ProductID INT PRIMARY KEY IDENTITY(100,1),
+    ProductName NVARCHAR(100) NOT NULL UNIQUE,
+    Price DECIMAL(10,2) NOT NULL CHECK (Price > 0),
+    Quantity INT NOT NULL CHECK (Quantity >= 0),
+    RemainingQuantity INT NOT NULL,
+    ExpiryDate DATE,
+    CONSTRAINT CHK_Remaining_Quantity CHECK (RemainingQuantity <= Quantity)
+);
+
+-- Customer Table
+CREATE TABLE Customer (
+    CustomerID INT PRIMARY KEY IDENTITY(100,1),
+    FirstName NVARCHAR(100) NOT NULL,
+    LastName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) UNIQUE,
+    Phone NVARCHAR(15),
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- Sales Transaction Table
+CREATE TABLE SalesTransaction (
+    TransactionID INT PRIMARY KEY IDENTITY(100,1),
+    CustomerID INT NOT NULL,
+    ProductID INT NOT NULL,
+    QuantityBought INT NOT NULL CHECK (QuantityBought > 0),
+    TransactionDate DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+);
+
+-- Invoice Table
+CREATE TABLE Invoice (
+    InvoiceID INT PRIMARY KEY IDENTITY(100,1),
+    TransactionID INT NOT NULL UNIQUE,
+    CustomerID INT NOT NULL,
+    TotalAmount DECIMAL(10,2),
+    Discount DECIMAL(5,2),
+    FinalAmount DECIMAL(10,2),
+    InvoiceDate DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (TransactionID) REFERENCES SalesTransaction(TransactionID),
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+);
