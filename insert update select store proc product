@@ -1,0 +1,47 @@
+-- Insert Product
+CREATE PROCEDURE InsertProduct(@ProductJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @Product TABLE (
+        ProductName NVARCHAR(100),
+        Price DECIMAL(10,2),
+        Quantity INT,
+        ExpiryDate DATE
+    );
+    INSERT INTO @Product
+    SELECT * FROM OPENJSON(@ProductJson)
+    WITH (ProductName NVARCHAR(100), Price DECIMAL(10,2), Quantity INT, ExpiryDate DATE);
+
+    INSERT INTO Product (ProductName, Price, Quantity, RemainingQuantity, ExpiryDate)
+    SELECT ProductName, Price, Quantity, Quantity, ExpiryDate FROM @Product;
+END;
+
+-- Update Product
+CREATE PROCEDURE UpdateProduct(@ProductJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @Product TABLE (
+        ProductID INT,
+        ProductName NVARCHAR(100),
+        Price DECIMAL(10,2),
+        Quantity INT,
+        ExpiryDate DATE
+    );
+    INSERT INTO @Product
+    SELECT * FROM OPENJSON(@ProductJson)
+    WITH (ProductID INT, ProductName NVARCHAR(100), Price DECIMAL(10,2), Quantity INT, ExpiryDate DATE);
+
+    UPDATE Product
+    SET ProductName = p.ProductName, Price = p.Price, Quantity = p.Quantity, ExpiryDate = p.ExpiryDate
+    FROM Product pr
+    JOIN @Product p ON pr.ProductID = p.ProductID;
+END;
+
+-- Select Product
+CREATE PROCEDURE SelectProduct(@ProductJson NVARCHAR(MAX))
+AS
+BEGIN
+    SELECT ProductID, ProductName, Price, Quantity, RemainingQuantity, ExpiryDate
+    FROM Product
+    WHERE ProductName IN (SELECT value FROM OPENJSON(@ProductJson));
+END;
