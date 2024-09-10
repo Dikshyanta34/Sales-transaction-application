@@ -1,0 +1,43 @@
+--for sales transaction 
+
+DECLARE @SalesTransactionJson NVARCHAR(MAX); 
+
+DECLARE @ManualCustomerID INT = 141;  
+
+DECLARE @ManualProductID INT = 251;    
+
+DECLARE @ManualQuantityBought INT = 13;  
+
+DECLARE @ManualTransactionDate NVARCHAR(10) = '2024-09-10';  
+
+  
+
+SET @SalesTransactionJson = N'{"CustomerID": ' + CAST(@ManualCustomerID AS NVARCHAR) +  
+
+    ', "ProductID": ' + CAST(@ManualProductID AS NVARCHAR) +  
+
+    ', "QuantityBought": ' + CAST(@ManualQuantityBought AS NVARCHAR) +  
+
+    ', "TransactionDate": "' + @ManualTransactionDate + '"}'; 
+
+  
+
+EXEC InsertSalesTransaction @SalesJson = @SalesTransactionJson; 
+
+--product and customer 
+
+DECLARE @Product NVARCHAR(MAX); 
+
+SET @Product = '{"ProductID": 100,  
+
+"ProductName": "Product1",  
+
+"Price": 10.00,  
+
+"ExpiryDate": "2024-12-31",  
+
+"Quantity": 100,  
+
+"RemainingQuantity": 100}'; 
+
+EXEC InsertProduct @Product; 
