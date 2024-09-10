@@ -1,0 +1,59 @@
+--random insertion for all: 
+
+DECLARE @i INT = 0; 
+
+DECLARE @ProductJson NVARCHAR(MAX); 
+
+DECLARE @CustomerJson NVARCHAR(MAX); 
+
+DECLARE @SalesTransactionJson NVARCHAR(MAX); 
+
+DECLARE @CustomerID INT; 
+
+DECLARE @ProductID INT; 
+
+  
+
+WHILE @i < 50    
+
+BEGIN 
+
+    -- Construct Product JSON and insert a product 
+
+    SET @ProductJson = N'{"ProductName": "' + 'Product' + CAST(@i AS NVARCHAR) + '", "Price": ' + CAST(CAST(RAND() * 100 AS DECIMAL(10,2)) AS NVARCHAR) + ', "Quantity": ' + CAST(ABS(CHECKSUM(NEWID()) % 50 + 1) AS NVARCHAR) + ', "ExpiryDate": "' + CONVERT(NVARCHAR, DATEADD(DAY, ABS(CHECKSUM(NEWID()) % 365), GETDATE()), 23) + '"}'; 
+
+    EXEC InsertProduct @ProductJson = @ProductJson; 
+
+    -- Construct Customer JSON and insert a customer 
+
+    SET @CustomerJson = N'{"FirstName": "' + 'First' + CAST(@i AS NVARCHAR) + '", "LastName": "' + 'Last' + CAST(@i AS NVARCHAR) + '", "Email": "' + 'email' + CAST(@i AS NVARCHAR) + '@test.com", "Phone": "1234567890"}'; 
+
+    EXEC InsertCustomer @CustomerJson = @CustomerJson; 
+
+ 
+
+  
+
+    -- Get last inserted CustomerID and ProductID 
+
+    SELECT @CustomerID = MAX(CustomerID) FROM Customer; 
+
+    SELECT @ProductID = MAX(ProductID) FROM Product; 
+
+    -- Construct Sales Transaction JSON and insert a transaction 
+
+    SET @SalesTransactionJson = N'{"CustomerID": ' + CAST(@CustomerID AS NVARCHAR) + ', "ProductID": ' + CAST(@ProductID AS NVARCHAR) + ', "QuantityBought": ' + CAST(ABS(CHECKSUM(NEWID()) % 5 + 1) AS NVARCHAR) + ', "TransactionDate": "' + CONVERT(NVARCHAR, GETDATE(), 23) + '"}'; 
+
+    EXEC InsertSalesTransaction @SalesJson = @SalesTransactionJson; 
+
+    -- Generate invoice for the customer 
+
+    DECLARE @InvoiceJson NVARCHAR(MAX) = N'{"CustomerID": ' + CAST(@CustomerID AS NVARCHAR) + '}'; 
+
+    EXEC CreateInvoice @InvoiceJson = @InvoiceJson; 
+
+    -- Increment counter 
+
+    SET @i = @i + 1; 
+
+END; 
