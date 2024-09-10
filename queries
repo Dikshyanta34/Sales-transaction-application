@@ -1,0 +1,112 @@
+1. Whose name start with the letter "A" or ends with the letter "S" but should have the letter "K".  
+
+SELECT * FROM Customer  
+
+WHERE (FirstName LIKE 'f%' OR LastName LIKE '%S') AND (FirstName LIKE '%2%' OR LastName LIKE '%K%'); 
+
+
+2.Do not have any invoice yet.	
+
+SELECT * FROM Customer 
+
+WHERE CustomerID NOT IN (SELECT DISTINCT CustomerID FROM Invoice); 
+
+
+3.Average number of products bought on current date.  
+
+SELECT AVG(QuantityBought) AS AvgProductsBoughtToday 
+
+FROM SalesTransaction 
+
+WHERE CAST(TransactionDate AS DATE) = CAST(GETDATE() AS DATE); 
+
+
+4.The customer who has spent highest amount in specific date rage.  
+
+DECLARE @StartDate DATE = '2023-01-01', @EndDate DATE = '2023-12-31'; 
+
+  
+
+SELECT TOP 1 C.CustomerID, C.FirstName, C.LastName, SUM(I.FinalAmount) AS TotalSpent 
+
+FROM Invoice I 
+
+JOIN Customer C ON I.CustomerID = C.CustomerID 
+
+WHERE I.InvoiceDate BETWEEN @StartDate AND @EndDate 
+
+GROUP BY C.CustomerID, C.FirstName, C.LastName 
+
+ORDER BY TotalSpent DESC; 
+
+
+
+SELECT TOP 1 C.CustomerID, C.FirstName, C.LastName, SUM(I.FinalAmount) AS TotalSpent 
+
+FROM Invoice I 
+
+JOIN Customer C ON I.CustomerID = C.CustomerID 
+
+WHERE I.InvoiceDate >'2023-02-01' 
+
+GROUP BY C.CustomerID, C.FirstName, C.LastName 
+
+ORDER BY TotalSpent DESC; 
+
+
+5. The product should have an expiry date. Delete a product that was never bought and was expired a week ago.  
+
+-- Expired more than a week ago 
+
+DELETE FROM Product 
+
+WHERE ProductID NOT IN (SELECT DISTINCT ProductID FROM SalesTransaction) 
+
+AND ExpiryDate <= DATEADD(WEEK, -1, GETDATE()); 
+
+  
+
+-- Expiring in a week 
+
+DELETE FROM Product 
+
+WHERE ProductID NOT IN (SELECT DISTINCT ProductID FROM SalesTransaction) 
+
+AND ExpiryDate <= DATEADD(WEEK, 1, GETDATE()); 
+
+
+6.Delete a product that was never bought and is about to expire in a week.   
+
+DELETE FROM Product 
+
+WHERE ProductID NOT IN (SELECT DISTINCT ProductID FROM SalesTransaction) 
+
+AND ExpiryDate <= DATEADD(WEEK, 1, GETDATE()); 
+
+
+7.Product should have a quantity column which shows the quantity of a product and a remaining column which should the remaining quantity of the product. This should be updated on the basis of transaction.     
+
+already dont while creating the tables as it automaticallly updates when there's a transaction in the transaction table quantity bought and the update is on the product table where remaing quantity = quantity - quantity bought
+
+
+8.Get the product of the year (The max quantity of a product bought this year.)   
+
+SELECT TOP 1 P.ProductID, P.ProductName, SUM(ST.QuantityBought) AS TotalQuantityBought 
+
+FROM SalesTransaction ST 
+
+JOIN Product P ON ST.ProductID = P.ProductID 
+
+WHERE YEAR(ST.TransactionDate) = YEAR(GETDATE()) 
+
+GROUP BY P.ProductID, P.ProductName 
+
+ORDER BY TotalQuantityBought DESC; 
+
+ 
+
+ 
+
+
+
+
