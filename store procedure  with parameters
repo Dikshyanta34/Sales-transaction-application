@@ -1,0 +1,112 @@
+1. Should have all the customers whose id and their information who were created within the date range  
+
+CREATE PROCEDURE GetCustomerSummary1( 
+
+ @CustomerID INT = NULL 
+
+) 
+
+AS 
+
+BEGIN 
+
+    -- Get customer data within date range 
+
+    SELECT C.CustomerID, C.FirstName, C.LastName, C.Email, C.CreatedDate 
+
+    FROM Customer C 
+
+    WHERE C.CreatedDate BETWEEN '2024-09-08 21:52:30.600' AND '2024-09-08 21:52:30.630' 
+
+      AND (@CustomerID IS NULL OR C.CustomerID = @CustomerID); 
+
+	  end; 
+
+EXEC GetCustomerSummary1; 
+
+2. Count of transactions made by all the customers  
+
+CREATE PROCEDURE GetCustomerSummary2( 
+
+  @CustomerID INT = NULL 
+
+) 
+
+AS 
+
+BEGIN 
+
+SELECT C.CustomerID, COUNT(ST.TransactionID) AS TransactionCount 
+
+    FROM Customer C 
+
+    LEFT JOIN SalesTransaction ST ON C.CustomerID = ST.CustomerID 
+
+    WHERE ST.TransactionDate BETWEEN '2024-09-08 21:52:30.610' AND '2024-09-08 21:52:30.630' 
+
+      AND (@CustomerID IS NULL OR C.CustomerID = @CustomerID) 
+
+    GROUP BY C.CustomerID; 
+
+	end; 
+
+EXEC getcustomersummary2; 
+
+
+ 3.Total Billed amount of customers 
+
+ CREATE PROCEDURE GetCustomerSummary3( 
+
+    @CustomerID INT = NULL  
+
+) 
+
+AS 
+
+BEGIN 
+
+    -- Total billed amount of customers 
+
+    SELECT C.CustomerID, SUM(I.FinalAmount) AS TotalBilledAmount 
+
+    FROM Customer C 
+
+    LEFT JOIN Invoice I ON C.CustomerID = I.CustomerID 
+
+    WHERE I.InvoiceDate BETWEEN '2024-09-08 21:52:30.623' AND '2024-09-08 21:52:30.630'  AND (@CustomerID IS NULL OR C.CustomerID = @CustomerID) 
+
+    GROUP BY C.CustomerID; 
+
+	end; 
+
+EXEC getcustomersummary3; 
+
+4.Top product bought by the customer. (if a customer has bought 5 notebook,2 pencils and 1 bag then Notebook is the top product)  
+
+CREATE PROCEDURE GetCustomerSummary4( 
+
+  @CustomerID INT = NULL 
+
+) 
+
+AS 
+
+BEGIN 
+
+-- Top product bought by customer 
+
+    SELECT C.CustomerID, P.ProductName, MAX(ST.QuantityBought) AS TopProductBought 
+
+    FROM Customer C 
+
+    LEFT JOIN SalesTransaction ST ON C.CustomerID = ST.CustomerID 
+
+    LEFT JOIN Product P ON ST.ProductID = P.ProductID 
+
+WHERE ST.TransactionDate BETWEEN '2024-09-08 21:52:30.627' AND '2024-09-08 21:52:30.630'  AND (@CustomerID IS NULL OR C.CustomerID = @CustomerID) 
+
+    GROUP BY C.CustomerID, P.ProductName;   
+
+END;    
+
+EXEC  getcustomersummary4; 
