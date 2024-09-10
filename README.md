@@ -59,9 +59,7 @@ Parameters:
 
 a.Customer (can pass multiple ids e.g.: 103,904) 
 
-b.Start Date and End date 
-
-c.Entity (transaction or invoice)
+b.Entity (transaction or invoice)
 
 
 Requirement: 
@@ -75,9 +73,7 @@ b.Should return data having entered date in the date range provided.
    
 Parameters: 
 
-a.Start Date and End date 
-
-b.Customer (if no customer Id passed then return all data else the given customers data only)
+a.Customer (if no customer Id passed then return all data else the given customers data only)
 
 Requirement: 
 
