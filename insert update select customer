@@ -1,0 +1,47 @@
+-- Insert Customer
+CREATE PROCEDURE InsertCustomer(@CustomerJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @Customer TABLE (
+        FirstName NVARCHAR(100),
+        LastName NVARCHAR(100),
+        Email NVARCHAR(100),
+        Phone NVARCHAR(15)
+    );
+    INSERT INTO @Customer
+    SELECT * FROM OPENJSON(@CustomerJson)
+    WITH (FirstName NVARCHAR(100), LastName NVARCHAR(100), Email NVARCHAR(100), Phone NVARCHAR(15));
+
+    INSERT INTO Customer (FirstName, LastName, Email, Phone)
+    SELECT FirstName, LastName, Email, Phone FROM @Customer;
+END;
+
+-- Update Customer
+CREATE PROCEDURE UpdateCustomer(@CustomerJson NVARCHAR(MAX))
+AS
+BEGIN
+    DECLARE @Customer TABLE (
+        CustomerID INT,
+        FirstName NVARCHAR(100),
+        LastName NVARCHAR(100),
+        Email NVARCHAR(100),
+        Phone NVARCHAR(15)
+    );
+    INSERT INTO @Customer
+    SELECT * FROM OPENJSON(@CustomerJson)
+    WITH (CustomerID INT, FirstName NVARCHAR(100), LastName NVARCHAR(100), Email NVARCHAR(100), Phone NVARCHAR(15));
+
+    UPDATE Customer
+    SET FirstName = c.FirstName, LastName = c.LastName, Email = c.Email, Phone = c.Phone
+    FROM Customer cu
+    JOIN @Customer c ON cu.CustomerID = c.CustomerID;
+END;
+
+-- Select Customer
+CREATE PROCEDURE SelectCustomer(@CustomerJson NVARCHAR(MAX))
+AS
+BEGIN
+    SELECT CustomerID, FirstName, LastName, Email, Phone
+    FROM Customer
+    WHERE Email IN (SELECT value FROM OPENJSON(@CustomerJson));
+END;
